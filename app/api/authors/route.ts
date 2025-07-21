@@ -1,12 +1,35 @@
+import { type NextRequest, NextResponse } from "next/server";
 import { getDatabase } from "@/lib/mongodb";
+import type { User } from "@/lib/models/User";
 
-export async function GET() {
+export async function GET(request: NextRequest) {
   try {
     const db = await getDatabase();
-    const users = await db.collection("users").find().toArray();
-    return Response.json({ success: true, authors: users });
+    const collection = db.collection<User>("users");
+
+    // Fetch all users. You might want to filter by role: { role: "user" }
+    const authors = await collection
+      .find({}) // Fetch all users
+      .project({ password: 0 }) // Exclude password from the result
+      .toArray();
+
+    // Convert ObjectId to string for JSON serialization
+    const serializedAuthors = authors.map((author) => ({
+      ...author,
+      _id: author._id?.toString(),
+      id: author._id?.toString(), // Add 'id' for consistency if needed on client
+    }));
+
+    return NextResponse.json({
+      success: true,
+      authors: serializedAuthors,
+      message: "Authors fetched successfully",
+    });
   } catch (error) {
     console.error("Error fetching authors:", error);
-    return new Response("Internal Server Error", { status: 500 });
+    return NextResponse.json(
+      { success: false, message: "Failed to fetch authors" },
+      { status: 500 }
+    );
   }
 }

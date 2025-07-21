@@ -64,7 +64,7 @@ export function Navigation() {
                   Home
                 </motion.span>
               </Link>
-              <Link href="/about">
+              <Link href="/fetchauthors">
                 <motion.span
                   whileHover={{ y: -2 }}
                   className="text-slate-700 dark:text-slate-300 hover:text-blue-600 dark:hover:text-blue-400 transition-colors duration-300 font-medium"
