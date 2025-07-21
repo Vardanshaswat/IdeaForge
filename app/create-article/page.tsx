@@ -1,45 +1,56 @@
-"use client"
+"use client";
 
-import type React from "react"
+import type React from "react";
 
-import { useState, useEffect } from "react"
-import { motion } from "framer-motion"
-import { useRouter } from "next/navigation"
-import Link from "next/link"
-import { ArrowLeft, Sparkles, Lightbulb, ImageIcon, Type, Target, Save, Eye, Lock } from "lucide-react"
-import { Card, CardContent } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
-import { Badge } from "@/components/ui/badge"
+import { useState, useEffect } from "react";
+import { motion } from "framer-motion";
+import { useRouter } from "next/navigation";
+import Link from "next/link";
+import {
+  ArrowLeft,
+  Sparkles,
+  Lightbulb,
+  ImageIcon,
+  Type,
+  Target,
+  Save,
+  Eye,
+  Lock,
+} from "lucide-react";
+import { Card, CardContent } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import LogoutButton from "@/components/logoutButton";
 
 // Authentication hook
 const useAuth = () => {
-  const [user, setUser] = useState(null)
-  const [loading, setLoading] = useState(true)
+  const [user, setUser] = useState(null);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const checkAuth = async () => {
       try {
-        const response = await fetch("/api/auth/me")
+        const response = await fetch("/api/auth/me");
         if (response.ok) {
-          const data = await response.json()
-          setUser(data.user)
+          const data = await response.json();
+          setUser(data.user);
         }
       } catch (error) {
-        console.error("Auth check failed:", error)
+        console.error("Auth check failed:", error);
       } finally {
-        setLoading(false)
+        setLoading(false);
       }
-    }
+    };
 
-    checkAuth()
-  }, [])
+    checkAuth();
+  }, []);
 
-  return { user, loading }
-}
+  return { user, loading };
+};
 
 const CreateArticlePage = () => {
-  const router = useRouter()
-  const { user, loading } = useAuth()
+  const router = useRouter();
+  const { user, loading } = useAuth();
   const [formData, setFormData] = useState({
     title: "",
     content: "",
@@ -47,28 +58,32 @@ const CreateArticlePage = () => {
     image: "",
     excerpt: "",
     tags: "",
-  })
-  const [isSubmitting, setIsSubmitting] = useState(false)
-  const [previewMode, setPreviewMode] = useState(false)
+  });
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [previewMode, setPreviewMode] = useState(false);
 
   // Redirect if not authenticated
   useEffect(() => {
     if (!loading && !user) {
-      router.push("/login?redirect=/create-article")
+      router.push("/login?redirect=/create-article");
     }
-  }, [user, loading, router])
+  }, [user, loading, router]);
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
-    const { name, value } = e.target
+  const handleInputChange = (
+    e: React.ChangeEvent<
+      HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
+    >
+  ) => {
+    const { name, value } = e.target;
     setFormData((prev) => ({
       ...prev,
       [name]: value,
-    }))
-  }
+    }));
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setIsSubmitting(true)
+    e.preventDefault();
+    setIsSubmitting(true);
 
     try {
       const articleData = {
@@ -76,7 +91,7 @@ const CreateArticlePage = () => {
         author: user?.id,
         authorName: user?.name,
         authorEmail: user?.email,
-      }
+      };
 
       const response = await fetch("/api/articles", {
         method: "POST",
@@ -84,45 +99,49 @@ const CreateArticlePage = () => {
           "Content-Type": "application/json",
         },
         body: JSON.stringify(articleData),
-      })
+      });
 
       if (response.ok) {
-        const result = await response.json()
-        console.log("Article created:", result)
-        router.push("/")
+        const result = await response.json();
+        console.log("Article created:", result);
+        router.push("/");
       } else {
-        throw new Error("Failed to create article")
+        throw new Error("Failed to create article");
       }
     } catch (error) {
-      console.error("Error creating article:", error)
-      alert("Failed to create article. Please try again.")
+      console.error("Error creating article:", error);
+      alert("Failed to create article. Please try again.");
     } finally {
-      setIsSubmitting(false)
+      setIsSubmitting(false);
     }
-  }
+  };
 
   const tips = [
     {
       icon: Type,
       title: "Compelling Headlines",
-      description: "Use attention-grabbing headlines that make readers want to click and read more",
+      description:
+        "Use attention-grabbing headlines that make readers want to click and read more",
     },
     {
       icon: ImageIcon,
       title: "High-Quality Images",
-      description: "Include stunning visuals that complement and enhance your storytelling",
+      description:
+        "Include stunning visuals that complement and enhance your storytelling",
     },
     {
       icon: Lightbulb,
       title: "Clear Structure",
-      description: "Break up text with subheadings and bullet points for better readability",
+      description:
+        "Break up text with subheadings and bullet points for better readability",
     },
     {
       icon: Target,
       title: "Call-to-Action",
-      description: "End with a clear next step or question to engage your readers",
+      description:
+        "End with a clear next step or question to engage your readers",
     },
-  ]
+  ];
 
   // Show loading state
   if (loading) {
@@ -133,7 +152,7 @@ const CreateArticlePage = () => {
           <p className="text-slate-600 dark:text-slate-300">Loading...</p>
         </div>
       </div>
-    )
+    );
   }
 
   // Show login required message if not authenticated
@@ -143,8 +162,12 @@ const CreateArticlePage = () => {
         <Card className="max-w-md mx-auto bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm border-slate-200/50 dark:border-slate-700/50">
           <CardContent className="p-8 text-center">
             <Lock className="w-12 h-12 text-blue-600 dark:text-blue-400 mx-auto mb-4" />
-            <h2 className="text-2xl font-bold text-slate-900 dark:text-white mb-2">Authentication Required</h2>
-            <p className="text-slate-600 dark:text-slate-300 mb-6">You need to be logged in to create articles.</p>
+            <h2 className="text-2xl font-bold text-slate-900 dark:text-white mb-2">
+              Authentication Required
+            </h2>
+            <p className="text-slate-600 dark:text-slate-300 mb-6">
+              You need to be logged in to create articles.
+            </p>
             <div className="space-y-3">
               <Link href="/login?redirect=/create-article">
                 <Button className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700">
@@ -160,7 +183,7 @@ const CreateArticlePage = () => {
           </CardContent>
         </Card>
       </div>
-    )
+    );
   }
 
   return (
@@ -169,7 +192,11 @@ const CreateArticlePage = () => {
       <section className="relative overflow-hidden py-16 px-4">
         <div className="absolute inset-0 bg-gradient-to-r from-blue-600/10 via-purple-600/10 to-pink-600/10" />
         <div className="relative max-w-6xl mx-auto">
-          <motion.div initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8 }}>
+          <motion.div
+            initial={{ opacity: 0, y: 30 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8 }}
+          >
             {/* Back Button */}
             <Link href="/">
               <motion.div
@@ -190,7 +217,9 @@ const CreateArticlePage = () => {
                   className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-gradient-to-r from-blue-500/10 to-purple-500/10 border border-blue-200/50 dark:border-blue-800/50 backdrop-blur-sm"
                 >
                   <Sparkles className="w-4 h-4 text-blue-600 dark:text-blue-400" />
-                  <span className="text-sm font-medium text-blue-700 dark:text-blue-300">Create Your Story</span>
+                  <span className="text-sm font-medium text-blue-700 dark:text-blue-300">
+                    Create Your Story
+                  </span>
                 </motion.div>
 
                 <h1 className="text-4xl md:text-6xl font-bold bg-gradient-to-r from-slate-900 via-blue-900 to-indigo-900 dark:from-white dark:via-blue-100 dark:to-indigo-100 bg-clip-text text-transparent leading-tight">
@@ -215,8 +244,12 @@ const CreateArticlePage = () => {
                   className="w-10 h-10 rounded-full"
                 />
                 <div>
-                  <p className="font-medium text-slate-900 dark:text-white">{user.name}</p>
-                  <p className="text-sm text-slate-600 dark:text-slate-300">Author</p>
+                  <p className="font-medium text-slate-900 dark:text-white">
+                    {user.name}
+                  </p>
+                  <p className="text-sm text-slate-600 dark:text-slate-300">
+                    Author
+                  </p>
                 </div>
               </div>
             </div>
@@ -244,8 +277,12 @@ const CreateArticlePage = () => {
                           <Sparkles className="w-5 h-5 text-white" />
                         </div>
                         <div>
-                          <h2 className="text-2xl font-bold text-slate-900 dark:text-white">Create New Article</h2>
-                          <p className="text-slate-600 dark:text-slate-300">Share your knowledge with the world</p>
+                          <h2 className="text-2xl font-bold text-slate-900 dark:text-white">
+                            Create New Article
+                          </h2>
+                          <p className="text-slate-600 dark:text-slate-300">
+                            Share your knowledge with the world
+                          </p>
                         </div>
                       </div>
                       <div className="w-20 h-1 bg-gradient-to-r from-blue-600 to-purple-600 rounded-full" />
@@ -464,7 +501,8 @@ const CreateArticlePage = () => {
                           {formData.title || "Article Title"}
                         </h1>
                         <p className="text-slate-600 dark:text-slate-300">
-                          {formData.excerpt || "Article excerpt will appear here..."}
+                          {formData.excerpt ||
+                            "Article excerpt will appear here..."}
                         </p>
                         {formData.tags && (
                           <div className="flex flex-wrap gap-2">
@@ -485,7 +523,8 @@ const CreateArticlePage = () => {
                       )}
                       <div className="prose prose-lg dark:prose-invert max-w-none">
                         <div className="whitespace-pre-wrap">
-                          {formData.content || "Article content will appear here..."}
+                          {formData.content ||
+                            "Article content will appear here..."}
                         </div>
                       </div>
                     </div>
@@ -493,6 +532,11 @@ const CreateArticlePage = () => {
                 </CardContent>
               </Card>
             </motion.div>
+
+            <header className="flex justify-between items-center p-4 shadow">
+              <h1 className="text-xl font-bold">Dashboard</h1>
+              <LogoutButton />
+            </header>
 
             {/* Sidebar */}
             <motion.div
@@ -504,7 +548,9 @@ const CreateArticlePage = () => {
               {/* Tips Section */}
               <Card className="bg-gradient-to-br from-white to-blue-50/50 dark:from-slate-800 dark:to-slate-900/50 border-slate-200/50 dark:border-slate-700/50 shadow-lg sticky top-4">
                 <CardContent className="p-6">
-                  <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-4">Writing Tips</h3>
+                  <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-4">
+                    Writing Tips
+                  </h3>
                   <div className="space-y-4">
                     {tips.map((tip, index) => (
                       <div key={index} className="flex items-start gap-3">
@@ -512,7 +558,9 @@ const CreateArticlePage = () => {
                           <tip.icon className="w-4 h-4 text-blue-600 dark:text-blue-400" />
                         </div>
                         <div>
-                          <h4 className="font-medium text-slate-900 dark:text-white text-sm mb-1">{tip.title}</h4>
+                          <h4 className="font-medium text-slate-900 dark:text-white text-sm mb-1">
+                            {tip.title}
+                          </h4>
                           <p className="text-slate-600 dark:text-slate-300 text-xs leading-relaxed">
                             {tip.description}
                           </p>
@@ -527,7 +575,7 @@ const CreateArticlePage = () => {
         </div>
       </section>
     </div>
-  )
-}
+  );
+};
 
-export default CreateArticlePage
+export default CreateArticlePage;

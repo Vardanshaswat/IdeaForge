@@ -1,87 +1,97 @@
-"use client"
+"use client";
 
-import { useState, useEffect } from "react"
-import { motion } from "framer-motion"
-import { Search, Calendar, Clock, ArrowRight, Sparkles } from "lucide-react"
-import { Button } from "@/components/ui/button"
-import { Badge } from "@/components/ui/badge"
-import { Card, CardContent } from "@/components/ui/card"
-import Link from "next/link"
+import { useState, useEffect } from "react";
+import { motion } from "framer-motion";
+import { Search, Calendar, Clock, ArrowRight, Sparkles } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Card, CardContent } from "@/components/ui/card";
+import LogoutButton from "@/components/logoutButton";
+import Link from "next/link";
 
-const categories = ["All", "Design", "Development", "AI", "Productivity", "Lifestyle", "Technology", "Business"]
+const categories = [
+  "All",
+  "Design",
+  "Development",
+  "AI",
+  "Productivity",
+  "Lifestyle",
+  "Technology",
+  "Business",
+];
 
 interface Article {
-  id: string
-  _id: string
-  title: string
-  excerpt: string
-  category: string
-  readTime: string
-  createdAt: string
-  image: string
-  authorName: string
-  views: number
-  likes: number
+  id: string;
+  _id: string;
+  title: string;
+  excerpt: string;
+  category: string;
+  readTime: string;
+  createdAt: string;
+  image: string;
+  authorName: string;
+  views: number;
+  likes: number;
 }
 
 export default function HomePage() {
-  const [selectedCategory, setSelectedCategory] = useState("All")
-  const [searchQuery, setSearchQuery] = useState("")
-  const [articles, setArticles] = useState<Article[]>([])
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
+  const [selectedCategory, setSelectedCategory] = useState("All");
+  const [searchQuery, setSearchQuery] = useState("");
+  const [articles, setArticles] = useState<Article[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   // Fetch articles from MongoDB
   useEffect(() => {
     const fetchArticles = async () => {
       try {
-        setLoading(true)
-        const params = new URLSearchParams()
+        setLoading(true);
+        const params = new URLSearchParams();
 
         if (selectedCategory !== "All") {
-          params.append("category", selectedCategory)
+          params.append("category", selectedCategory);
         }
 
         if (searchQuery) {
-          params.append("search", searchQuery)
+          params.append("search", searchQuery);
         }
 
-        const response = await fetch(`/api/articles?${params.toString()}`)
-        const data = await response.json()
+        const response = await fetch(`/api/articles?${params.toString()}`);
+        const data = await response.json();
 
         if (data.success) {
-          setArticles(data.articles)
-          setError(null)
+          setArticles(data.articles);
+          setError(null);
         } else {
-          setError(data.message || "Failed to fetch articles")
+          setError(data.message || "Failed to fetch articles");
         }
       } catch (err) {
-        setError("Failed to fetch articles")
-        console.error("Error fetching articles:", err)
+        setError("Failed to fetch articles");
+        console.error("Error fetching articles:", err);
       } finally {
-        setLoading(false)
+        setLoading(false);
       }
-    }
+    };
 
-    fetchArticles()
-  }, [selectedCategory, searchQuery])
+    fetchArticles();
+  }, [selectedCategory, searchQuery]);
 
   // Debounce search query
   useEffect(() => {
     const timer = setTimeout(() => {
       // Search will be triggered by the effect above
-    }, 500)
+    }, 500);
 
-    return () => clearTimeout(timer)
-  }, [searchQuery])
+    return () => clearTimeout(timer);
+  }, [searchQuery]);
 
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString("en-US", {
       year: "numeric",
       month: "short",
       day: "numeric",
-    })
-  }
+    });
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 dark:from-slate-950 dark:via-blue-950 dark:to-indigo-950">
@@ -102,7 +112,9 @@ export default function HomePage() {
               className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-gradient-to-r from-blue-500/10 to-purple-500/10 border border-blue-200/50 dark:border-blue-800/50 backdrop-blur-sm"
             >
               <Sparkles className="w-4 h-4 text-blue-600 dark:text-blue-400" />
-              <span className="text-sm font-medium text-blue-700 dark:text-blue-300">Welcome to ModernBlog</span>
+              <span className="text-sm font-medium text-blue-700 dark:text-blue-300">
+                Welcome to ModernBlog
+              </span>
             </motion.div>
 
             <h1 className="text-5xl md:text-7xl font-bold bg-gradient-to-r from-slate-900 via-blue-900 to-indigo-900 dark:from-white dark:via-blue-100 dark:to-indigo-100 bg-clip-text text-transparent leading-tight">
@@ -124,7 +136,8 @@ export default function HomePage() {
               transition={{ delay: 0.7, duration: 0.8 }}
               className="text-xl text-slate-600 dark:text-slate-300 max-w-2xl mx-auto leading-relaxed"
             >
-              Discover insights, tutorials, and stories from the world of design, development, and digital innovation.
+              Discover insights, tutorials, and stories from the world of
+              design, development, and digital innovation.
             </motion.p>
 
             <motion.div
@@ -166,9 +179,15 @@ export default function HomePage() {
             {/* Category Filters */}
             <div className="flex flex-wrap gap-2">
               {categories.map((category) => (
-                <motion.div key={category} whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+                <motion.div
+                  key={category}
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                >
                   <Button
-                    variant={selectedCategory === category ? "default" : "outline"}
+                    variant={
+                      selectedCategory === category ? "default" : "outline"
+                    }
                     size="sm"
                     onClick={() => setSelectedCategory(category)}
                     className={`transition-all duration-300 ${
@@ -192,7 +211,9 @@ export default function HomePage() {
           {loading ? (
             <div className="text-center py-12">
               <div className="w-8 h-8 border-4 border-blue-600/30 border-t-blue-600 rounded-full animate-spin mx-auto mb-4"></div>
-              <p className="text-slate-600 dark:text-slate-300">Loading articles...</p>
+              <p className="text-slate-600 dark:text-slate-300">
+                Loading articles...
+              </p>
             </div>
           ) : error ? (
             <div className="text-center py-12">
@@ -200,7 +221,9 @@ export default function HomePage() {
             </div>
           ) : articles.length === 0 ? (
             <div className="text-center py-12">
-              <p className="text-slate-600 dark:text-slate-300 mb-4">No articles found.</p>
+              <p className="text-slate-600 dark:text-slate-300 mb-4">
+                No articles found.
+              </p>
               <Link href="/create-article">
                 <Button className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700">
                   Create First Article
@@ -208,9 +231,15 @@ export default function HomePage() {
               </Link>
             </div>
           ) : (
-            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 1.3, duration: 0.8 }}>
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 1.3, duration: 0.8 }}
+            >
               <h2 className="text-3xl font-bold text-slate-900 dark:text-white mb-8 text-center">
-                {selectedCategory === "All" ? "Latest Stories" : `${selectedCategory} Stories`}
+                {selectedCategory === "All"
+                  ? "Latest Stories"
+                  : `${selectedCategory} Stories`}
               </h2>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
                 {articles.map((article, index) => (
@@ -228,7 +257,10 @@ export default function HomePage() {
                           <motion.img
                             whileHover={{ scale: 1.1 }}
                             transition={{ duration: 0.6 }}
-                            src={article.image || "/placeholder.svg?height=300&width=400"}
+                            src={
+                              article.image ||
+                              "/placeholder.svg?height=300&width=400"
+                            }
                             alt={article.title}
                             className="w-full h-48 object-cover"
                           />
@@ -245,7 +277,9 @@ export default function HomePage() {
                             <p className="text-slate-600 dark:text-slate-300 text-sm leading-relaxed line-clamp-3">
                               {article.excerpt}
                             </p>
-                            <p className="text-xs text-slate-500 dark:text-slate-400">By {article.authorName}</p>
+                            <p className="text-xs text-slate-500 dark:text-slate-400">
+                              By {article.authorName}
+                            </p>
                           </div>
                           <div className="flex items-center justify-between pt-4 mt-auto">
                             <div className="flex items-center gap-4 text-xs text-slate-500 dark:text-slate-400">
@@ -258,7 +292,10 @@ export default function HomePage() {
                                 {article.readTime}
                               </div>
                             </div>
-                            <motion.div whileHover={{ x: 3 }} className="text-blue-600 dark:text-blue-400">
+                            <motion.div
+                              whileHover={{ x: 3 }}
+                              className="text-blue-600 dark:text-blue-400"
+                            >
                               <ArrowRight className="w-4 h-4" />
                             </motion.div>
                           </div>
@@ -273,5 +310,5 @@ export default function HomePage() {
         </div>
       </section>
     </div>
-  )
+  );
 }

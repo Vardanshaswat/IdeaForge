@@ -1,23 +1,23 @@
-"use client"
+"use client";
 
-import { useState, useEffect } from "react"
-import { motion, AnimatePresence } from "framer-motion"
-import { Moon, Sun, Menu, X, Sparkles } from "lucide-react"
-import { useTheme } from "next-themes"
-import { Button } from "@/components/ui/button"
-import Link from "next/link"
+import { useState, useEffect } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import { Moon, Sun, Menu, X, Sparkles } from "lucide-react";
+import { useTheme } from "next-themes";
+import { Button } from "@/components/ui/button";
+import Link from "next/link";
 
 export function Navigation() {
-  const [mounted, setMounted] = useState(false)
-  const [isOpen, setIsOpen] = useState(false)
-  const { theme, setTheme } = useTheme()
+  const [mounted, setMounted] = useState(false);
+  const [isOpen, setIsOpen] = useState(false);
+  const { theme, setTheme } = useTheme();
 
   useEffect(() => {
-    setMounted(true)
-  }, [])
+    setMounted(true);
+  }, []);
 
   if (!mounted) {
-    return null
+    return null;
   }
 
   return (
@@ -31,7 +31,10 @@ export function Navigation() {
         <div className="flex items-center justify-between h-16">
           {/* Logo */}
           <Link href="/">
-            <motion.div whileHover={{ scale: 1.05 }} className="flex items-center gap-2">
+            <motion.div
+              whileHover={{ scale: 1.05 }}
+              className="flex items-center gap-2"
+            >
               <div className="w-8 h-8 bg-gradient-to-r from-blue-600 to-purple-600 rounded-lg flex items-center justify-center">
                 <Sparkles className="w-4 h-4 text-white" />
               </div>
@@ -52,7 +55,7 @@ export function Navigation() {
                   Home
                 </motion.span>
               </Link>
-              <Link href="/about">
+              <Link href="/fetchauthors">
                 <motion.span
                   whileHover={{ y: -2 }}
                   className="text-slate-700 dark:text-slate-300 hover:text-blue-600 dark:hover:text-blue-400 transition-colors duration-300 font-medium"
@@ -124,7 +127,12 @@ export function Navigation() {
               </Button>
             </motion.div>
 
-            <Button variant="ghost" size="sm" onClick={() => setIsOpen(!isOpen)} className="w-9 h-9 p-0">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setIsOpen(!isOpen)}
+              className="w-9 h-9 p-0"
+            >
               <AnimatePresence mode="wait" initial={false}>
                 <motion.div
                   key={isOpen ? "close" : "open"}
@@ -133,7 +141,11 @@ export function Navigation() {
                   exit={{ rotate: 90, opacity: 0 }}
                   transition={{ duration: 0.2 }}
                 >
-                  {isOpen ? <X className="h-4 w-4" /> : <Menu className="h-4 w-4" />}
+                  {isOpen ? (
+                    <X className="h-4 w-4" />
+                  ) : (
+                    <Menu className="h-4 w-4" />
+                  )}
                 </motion.div>
               </AnimatePresence>
             </Button>
@@ -181,5 +193,5 @@ export function Navigation() {
         </AnimatePresence>
       </div>
     </motion.nav>
-  )
+  );
 }
