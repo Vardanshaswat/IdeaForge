@@ -1,13 +1,21 @@
-"use client"
+"use client";
 
-import { motion } from "framer-motion"
-import { ArrowLeft, Calendar, Clock, Share2, Heart, Bookmark, Eye } from "lucide-react"
-import { Button } from "@/components/ui/button"
-import { Badge } from "@/components/ui/badge"
-import { Card, CardContent } from "@/components/ui/card"
-import { Separator } from "@/components/ui/separator"
-import Link from "next/link"
-import { useState } from "react"
+import { motion } from "framer-motion";
+import {
+  ArrowLeft,
+  Calendar,
+  Clock,
+  Share2,
+  Heart,
+  Bookmark,
+  Eye,
+} from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Card, CardContent } from "@/components/ui/card";
+import { Separator } from "@/components/ui/separator";
+import Link from "next/link";
+import { useState } from "react";
 
 // Mock post data - in a real app, this would come from your CMS or API
 const getPostById = (id: string) => {
@@ -48,26 +56,28 @@ const getPostById = (id: string) => {
         bookmarks: 89,
       },
     },
-  }
-  return posts[id] || null
-}
+  };
+  return posts[id as keyof typeof posts] || null;
+};
 
 export default function PostPage({ params }: { params: { id: string } }) {
-  const post = getPostById(params.id)
-  const [isLiked, setIsLiked] = useState(false)
-  const [isBookmarked, setIsBookmarked] = useState(false)
+  const post = getPostById(params.id);
+  const [isLiked, setIsLiked] = useState(false);
+  const [isBookmarked, setIsBookmarked] = useState(false);
 
   if (!post) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
-          <h1 className="text-2xl font-bold text-slate-900 dark:text-white mb-4">Post not found</h1>
+          <h1 className="text-2xl font-bold text-slate-900 dark:text-white mb-4">
+            Post not found
+          </h1>
           <Link href="/">
             <Button>Return Home</Button>
           </Link>
         </div>
       </div>
-    )
+    );
   }
 
   return (
@@ -76,7 +86,11 @@ export default function PostPage({ params }: { params: { id: string } }) {
       <section className="relative overflow-hidden">
         <div className="absolute inset-0 bg-gradient-to-r from-blue-600/10 via-purple-600/10 to-pink-600/10" />
         <div className="relative max-w-4xl mx-auto px-4 py-12">
-          <motion.div initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8 }}>
+          <motion.div
+            initial={{ opacity: 0, y: 30 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8 }}
+          >
             <Link href="/">
               <motion.div
                 whileHover={{ x: -5 }}
@@ -88,7 +102,9 @@ export default function PostPage({ params }: { params: { id: string } }) {
             </Link>
 
             <div className="space-y-6">
-              <Badge className="bg-gradient-to-r from-blue-600 to-purple-600 text-white">{post.category}</Badge>
+              <Badge className="bg-gradient-to-r from-blue-600 to-purple-600 text-white">
+                {post.category}
+              </Badge>
 
               <h1 className="text-4xl md:text-5xl font-bold text-slate-900 dark:text-white leading-tight">
                 {post.title}
@@ -102,7 +118,9 @@ export default function PostPage({ params }: { params: { id: string } }) {
                     className="w-10 h-10 rounded-full"
                   />
                   <div>
-                    <p className="font-medium text-slate-900 dark:text-white">{post.author.name}</p>
+                    <p className="font-medium text-slate-900 dark:text-white">
+                      {post.author.name}
+                    </p>
                     <p className="text-sm">{post.author.bio}</p>
                   </div>
                 </div>
@@ -136,7 +154,11 @@ export default function PostPage({ params }: { params: { id: string } }) {
             transition={{ delay: 0.3, duration: 0.8 }}
             className="relative overflow-hidden rounded-2xl shadow-2xl"
           >
-            <img src={post.image || "/placeholder.svg"} alt={post.title} className="w-full h-64 md:h-96 object-cover" />
+            <img
+              src={post.image || "/placeholder.svg"}
+              alt={post.title}
+              className="w-full h-64 md:h-96 object-cover"
+            />
             <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent" />
           </motion.div>
         </div>
@@ -173,34 +195,58 @@ export default function PostPage({ params }: { params: { id: string } }) {
               {/* Actions */}
               <Card className="bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm border-slate-200/50 dark:border-slate-700/50 sticky top-4">
                 <CardContent className="p-6 space-y-4">
-                  <h3 className="font-semibold text-slate-900 dark:text-white">Actions</h3>
+                  <h3 className="font-semibold text-slate-900 dark:text-white">
+                    Actions
+                  </h3>
                   <div className="space-y-3">
-                    <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
+                    <motion.div
+                      whileHover={{ scale: 1.02 }}
+                      whileTap={{ scale: 0.98 }}
+                    >
                       <Button
                         variant="outline"
                         size="sm"
                         className="w-full justify-start gap-2 bg-transparent"
                         onClick={() => setIsLiked(!isLiked)}
                       >
-                        <Heart className={`w-4 h-4 ${isLiked ? "fill-red-500 text-red-500" : ""}`} />
+                        <Heart
+                          className={`w-4 h-4 ${
+                            isLiked ? "fill-red-500 text-red-500" : ""
+                          }`}
+                        />
                         {isLiked ? "Liked" : "Like"} ({post.stats.likes})
                       </Button>
                     </motion.div>
 
-                    <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
+                    <motion.div
+                      whileHover={{ scale: 1.02 }}
+                      whileTap={{ scale: 0.98 }}
+                    >
                       <Button
                         variant="outline"
                         size="sm"
                         className="w-full justify-start gap-2 bg-transparent"
                         onClick={() => setIsBookmarked(!isBookmarked)}
                       >
-                        <Bookmark className={`w-4 h-4 ${isBookmarked ? "fill-blue-500 text-blue-500" : ""}`} />
-                        {isBookmarked ? "Saved" : "Save"} ({post.stats.bookmarks})
+                        <Bookmark
+                          className={`w-4 h-4 ${
+                            isBookmarked ? "fill-blue-500 text-blue-500" : ""
+                          }`}
+                        />
+                        {isBookmarked ? "Saved" : "Save"} (
+                        {post.stats.bookmarks})
                       </Button>
                     </motion.div>
 
-                    <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
-                      <Button variant="outline" size="sm" className="w-full justify-start gap-2 bg-transparent">
+                    <motion.div
+                      whileHover={{ scale: 1.02 }}
+                      whileTap={{ scale: 0.98 }}
+                    >
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="w-full justify-start gap-2 bg-transparent"
+                      >
                         <Share2 className="w-4 h-4" />
                         Share
                       </Button>
@@ -213,5 +259,5 @@ export default function PostPage({ params }: { params: { id: string } }) {
         </div>
       </section>
     </div>
-  )
+  );
 }

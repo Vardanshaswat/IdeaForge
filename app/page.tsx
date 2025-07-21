@@ -6,7 +6,6 @@ import { Search, Calendar, Clock, ArrowRight, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
-import LogoutButton from "@/components/logoutButton";
 import Link from "next/link";
 
 const categories = [

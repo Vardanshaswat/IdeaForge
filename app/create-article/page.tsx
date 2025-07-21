@@ -20,33 +20,10 @@ import {
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import LogoutButton from "@/components/logoutButton";
 
 // Authentication hook
-const useAuth = () => {
-  const [user, setUser] = useState(null);
-  const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    const checkAuth = async () => {
-      try {
-        const response = await fetch("/api/auth/me");
-        if (response.ok) {
-          const data = await response.json();
-          setUser(data.user);
-        }
-      } catch (error) {
-        console.error("Auth check failed:", error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    checkAuth();
-  }, []);
-
-  return { user, loading };
-};
+import { useAuth } from "@/hooks/use-auth";
 
 const CreateArticlePage = () => {
   const router = useRouter();
@@ -532,11 +509,6 @@ const CreateArticlePage = () => {
                 </CardContent>
               </Card>
             </motion.div>
-
-            <header className="flex justify-between items-center p-4 shadow">
-              <h1 className="text-xl font-bold">Dashboard</h1>
-              <LogoutButton />
-            </header>
 
             {/* Sidebar */}
             <motion.div
