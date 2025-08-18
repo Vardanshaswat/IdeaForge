@@ -13,6 +13,7 @@ export interface User {
   emailVerified?: boolean;
   likes?: number; // New field for total likes
   likedBy?: string[];
+  followers?: string[];
 }
 
 export interface CreateUserData {

@@ -1,24 +1,28 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { Heart } from "lucide-react";
+import { useEffect, useState, useMemo } from "react";
+import { Heart, UserPlus, UserMinus, Users, UserCheck } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { useAuth } from "@/hooks/use-auth"; // Import useAuth
-import { Card, CardContent } from "@/components/ui/card"; // Import Card components
+import { useAuth } from "@/hooks/use-auth";
+import { Card, CardContent } from "@/components/ui/card";
+import { useToast } from "@/hooks/use-toast";
 
 interface Author {
   _id: string;
   name: string;
   email: string;
   avatar?: string;
-  likes?: number; // Add likes field
-  likedBy?: string[]; // Add likedBy field
+  likes?: number;
+  likedBy?: string[];
+  followers?: string[];
 }
 
 export default function AuthorsPage() {
-  const { user, loading: authLoading } = useAuth(); // Get current user from useAuth
+  const { user, loading: authLoading } = useAuth();
   const [authors, setAuthors] = useState<Author[]>([]);
   const [loading, setLoading] = useState(true);
+  const [viewMode, setViewMode] = useState<"all" | "followed">("all");
+  const { toast } = useToast();
 
   const fetchAuthors = async () => {
     try {
@@ -30,6 +34,11 @@ export default function AuthorsPage() {
       }
     } catch (err) {
       console.error("Failed to fetch authors:", err);
+      toast({
+        title: "Error",
+        description: "Failed to load authors. Please try again.",
+        variant: "destructive",
+      });
     } finally {
       setLoading(false);
     }
@@ -39,9 +48,20 @@ export default function AuthorsPage() {
     fetchAuthors();
   }, []);
 
+  const displayedAuthors = useMemo(() => {
+    if (viewMode === "followed" && user) {
+      return authors.filter((author) => author.followers?.includes(user.id));
+    }
+    return authors;
+  }, [authors, viewMode, user]);
+
   const handleLike = async (authorId: string) => {
     if (!user) {
-      alert("You need to be logged in to like an author.");
+      toast({
+        title: "Authentication Required",
+        description: "You need to be logged in to like an author.",
+        variant: "destructive",
+      });
       return;
     }
 
@@ -56,7 +76,6 @@ export default function AuthorsPage() {
       const data = await response.json();
 
       if (data.success) {
-        // Update the local state to reflect the new like count and likedBy status
         setAuthors((prevAuthors) =>
           prevAuthors.map((author) =>
             author._id === authorId
@@ -68,12 +87,89 @@ export default function AuthorsPage() {
               : author
           )
         );
+        toast({
+          title: "Success",
+          description: data.message,
+          variant: "default",
+        });
       } else {
-        alert(data.message || "Failed to update like status.");
+        toast({
+          title: "Error",
+          description: data.message || "Failed to update like status.",
+          variant: "destructive",
+        });
       }
     } catch (error) {
       console.error("Error liking author:", error);
-      alert("Failed to like/unlike author. Please try again.");
+      toast({
+        title: "Network Error",
+        description: "Failed to like/unlike author. Please try again.",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleFollow = async (authorId: string) => {
+    if (!user) {
+      toast({
+        title: "Authentication Required",
+        description: "You need to be logged in to follow an author.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (user.id === authorId) {
+      toast({
+        title: "Action Not Allowed",
+        description: "You cannot follow yourself.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    try {
+      const response = await fetch(`/api/authors/${authorId}/follow`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
+
+      const data = await response.json();
+
+      if (data.success) {
+        setAuthors((prevAuthors) =>
+          prevAuthors.map((author) =>
+            author._id === authorId
+              ? {
+                  ...author,
+                  followers: data.userIsFollowing
+                    ? [...(author.followers || []), user.id]
+                    : (author.followers || []).filter((id) => id !== user.id),
+                }
+              : author
+          )
+        );
+        toast({
+          title: "Success",
+          description: data.message,
+          variant: "default",
+        });
+      } else {
+        toast({
+          title: "Error",
+          description: data.message || "Failed to update follow status.",
+          variant: "destructive",
+        });
+      }
+    } catch (error) {
+      console.error("Error following author:", error);
+      toast({
+        title: "Network Error",
+        description: "Failed to follow/unfollow author. Please try again.",
+        variant: "destructive",
+      });
     }
   };
 
@@ -95,17 +191,45 @@ export default function AuthorsPage() {
       <h1 className="text-3xl font-bold text-slate-900 dark:text-white mb-8 text-center">
         Registered Authors
       </h1>
-      {authors.length === 0 ? (
+
+      <div className="flex justify-center gap-4 mb-8">
+        <Button
+          variant={viewMode === "all" ? "default" : "outline"}
+          onClick={() => setViewMode("all")}
+          className="flex items-center gap-2"
+        >
+          <Users className="w-4 h-4" />
+          All Authors
+        </Button>
+        {user && (
+          <Button
+            variant={viewMode === "followed" ? "default" : "outline"}
+            onClick={() => setViewMode("followed")}
+            className="flex items-center gap-2"
+          >
+            <UserCheck className="w-4 h-4" />
+            Authors You Follow
+          </Button>
+        )}
+      </div>
+
+      {displayedAuthors.length === 0 ? (
         <div className="text-center py-12">
           <p className="text-slate-600 dark:text-slate-300">
-            No authors found.
+            {viewMode === "followed" && user
+              ? "You are not following any authors yet."
+              : "No authors found."}
           </p>
         </div>
       ) : (
         <ul className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 max-w-6xl mx-auto">
-          {authors.map((author) => {
+          {displayedAuthors.map((author) => {
             const isLikedByCurrentUser =
               user && author.likedBy?.includes(user.id);
+            const isFollowedByCurrentUser =
+              user && author.followers?.includes(user.id);
+            const isCurrentUserAuthor = user && user.id === author._id;
+
             return (
               <li key={author._id}>
                 <Card className="bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm border-slate-200/50 dark:border-slate-700/50 hover:shadow-xl hover:shadow-blue-500/10 transition-all duration-300 h-full">
@@ -129,12 +253,12 @@ export default function AuthorsPage() {
                         {author.email}
                       </p>
                     </div>
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-2 mt-2">
                       <Button
                         variant="outline"
                         size="sm"
                         onClick={() => handleLike(author._id)}
-                        disabled={!user} // Disable if not logged in
+                        disabled={!user}
                         className={`flex items-center gap-1 ${
                           isLikedByCurrentUser
                             ? "text-red-500 border-red-500"
@@ -147,6 +271,28 @@ export default function AuthorsPage() {
                           }`}
                         />
                         {author.likes || 0}
+                      </Button>
+                      <Button
+                        variant={
+                          isFollowedByCurrentUser ? "default" : "outline"
+                        }
+                        size="sm"
+                        onClick={() => handleFollow(author._id)}
+                        // Treat null as false so disabled false or true only
+                        disabled={!user || (isCurrentUserAuthor ?? false)}
+                        className={`flex items-center gap-1 ${
+                          isFollowedByCurrentUser
+                            ? "bg-blue-600 text-white hover:bg-blue-700"
+                            : "text-slate-600 dark:text-slate-300 hover:bg-blue-50 dark:hover:bg-slate-700"
+                        }`}
+                      >
+                        {isFollowedByCurrentUser ? (
+                          <UserMinus className="w-4 h-4" />
+                        ) : (
+                          <UserPlus className="w-4 h-4" />
+                        )}
+                        {isFollowedByCurrentUser ? "Following" : "Follow"} (
+                        {author.followers?.length || 0})
                       </Button>
                     </div>
                   </CardContent>

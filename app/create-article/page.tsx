@@ -2,7 +2,9 @@
 
 import type React from "react";
 
-import { useState, useEffect } from "react";
+import { useEffect } from "react";
+import { CldUploadButton } from "next-cloudinary";
+import { useState } from "react";
 import { motion } from "framer-motion";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
@@ -16,6 +18,7 @@ import {
   Save,
   Eye,
   Lock,
+  Upload,
 } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -39,6 +42,34 @@ const CreateArticlePage = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [previewMode, setPreviewMode] = useState(false);
 
+  const tips = [
+    {
+      title: "Start with a Hook",
+      description: "Grab your reader's attention with an interesting opening.",
+      icon: Lightbulb,
+    },
+    {
+      title: "Use Subheadings",
+      description: "Break up your content into manageable sections.",
+      icon: Type,
+    },
+    {
+      title: "Include Images",
+      description: "Visuals can help explain complex ideas.",
+      icon: ImageIcon,
+    },
+    {
+      title: "Proofread",
+      description: "Check for spelling and grammar errors before publishing.",
+      icon: Eye,
+    },
+    {
+      title: "Engage with Your Audience",
+      description: "Encourage comments and interactions.",
+      icon: Lock,
+    },
+  ];
+
   // Redirect if not authenticated
   useEffect(() => {
     if (!loading && !user) {
@@ -55,6 +86,14 @@ const CreateArticlePage = () => {
     setFormData((prev) => ({
       ...prev,
       [name]: value,
+    }));
+  };
+
+  const handleImageUpload = (result: any) => {
+    const imageUrl = `https://res.cloudinary.com/${process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME}/image/upload/${result?.info?.public_id}`;
+    setFormData((prev) => ({
+      ...prev,
+      image: imageUrl,
     }));
   };
 
@@ -92,76 +131,6 @@ const CreateArticlePage = () => {
       setIsSubmitting(false);
     }
   };
-
-  const tips = [
-    {
-      icon: Type,
-      title: "Compelling Headlines",
-      description:
-        "Use attention-grabbing headlines that make readers want to click and read more",
-    },
-    {
-      icon: ImageIcon,
-      title: "High-Quality Images",
-      description:
-        "Include stunning visuals that complement and enhance your storytelling",
-    },
-    {
-      icon: Lightbulb,
-      title: "Clear Structure",
-      description:
-        "Break up text with subheadings and bullet points for better readability",
-    },
-    {
-      icon: Target,
-      title: "Call-to-Action",
-      description:
-        "End with a clear next step or question to engage your readers",
-    },
-  ];
-
-  // Show loading state
-  if (loading) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 dark:from-slate-950 dark:via-blue-950 dark:to-indigo-950 flex items-center justify-center">
-        <div className="text-center">
-          <div className="w-8 h-8 border-4 border-blue-600/30 border-t-blue-600 rounded-full animate-spin mx-auto mb-4"></div>
-          <p className="text-slate-600 dark:text-slate-300">Loading...</p>
-        </div>
-      </div>
-    );
-  }
-
-  // Show login required message if not authenticated
-  if (!user) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 dark:from-slate-950 dark:via-blue-950 dark:to-indigo-950 flex items-center justify-center">
-        <Card className="max-w-md mx-auto bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm border-slate-200/50 dark:border-slate-700/50">
-          <CardContent className="p-8 text-center">
-            <Lock className="w-12 h-12 text-blue-600 dark:text-blue-400 mx-auto mb-4" />
-            <h2 className="text-2xl font-bold text-slate-900 dark:text-white mb-2">
-              Authentication Required
-            </h2>
-            <p className="text-slate-600 dark:text-slate-300 mb-6">
-              You need to be logged in to create articles.
-            </p>
-            <div className="space-y-3">
-              <Link href="/login?redirect=/create-article">
-                <Button className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700">
-                  Login
-                </Button>
-              </Link>
-              <Link href="/">
-                <Button variant="outline" className="w-full bg-transparent">
-                  Back to Home
-                </Button>
-              </Link>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-    );
-  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 dark:from-slate-950 dark:via-blue-950 dark:to-indigo-950">
@@ -216,13 +185,14 @@ const CreateArticlePage = () => {
               {/* User Info */}
               <div className="hidden md:flex items-center gap-3 bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm rounded-lg p-4 border border-slate-200/50 dark:border-slate-700/50">
                 <img
-                  src={user.avatar || "/placeholder.svg?height=40&width=40"}
-                  alt={user.name}
+                  src={user?.avatar || "/placeholder.svg?height=40&width=40"}
+                  alt={user?.name || "User"}
                   className="w-10 h-10 rounded-full"
                 />
+
                 <div>
                   <p className="font-medium text-slate-900 dark:text-white">
-                    {user.name}
+                    {user?.name}
                   </p>
                   <p className="text-sm text-slate-600 dark:text-slate-300">
                     Author
@@ -367,23 +337,33 @@ const CreateArticlePage = () => {
                         transition={{ delay: 0.4 }}
                         className="space-y-2"
                       >
-                        <label
-                          htmlFor="image"
-                          className="flex items-center gap-2 text-sm font-medium text-slate-900 dark:text-white"
-                        >
+                        <label className="flex items-center gap-2 text-sm font-medium text-slate-900 dark:text-white">
                           <ImageIcon className="w-4 h-4 text-blue-600 dark:text-blue-400" />
-                          Featured Image URL *
+                          Featured Image *
                         </label>
-                        <input
-                          type="url"
-                          id="image"
-                          name="image"
-                          value={formData.image}
-                          onChange={handleInputChange}
-                          placeholder="https://example.com/your-image.jpg"
-                          required
-                          className="w-full px-4 py-3 bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm border border-slate-200/50 dark:border-slate-700/50 rounded-lg focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 dark:focus:border-blue-400 transition-all duration-300 text-slate-900 dark:text-white placeholder:text-slate-500 dark:placeholder:text-slate-400"
-                        />
+                        <div className="flex items-center gap-4">
+                          <CldUploadButton
+                            uploadPreset="my_unsigned_preset"
+                            onUpload={handleImageUpload}
+                            className="flex items-center gap-2 px-4 py-3 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-medium rounded-lg shadow-lg shadow-blue-500/25 hover:shadow-xl hover:shadow-blue-500/30 transition-all duration-300"
+                          >
+                            <Upload className="w-4 h-4" />
+                            Upload Image
+                          </CldUploadButton>
+                          {formData.image && (
+                            <div className="flex items-center gap-2 text-sm text-green-600 dark:text-green-400">
+                              <ImageIcon className="w-4 h-4" />
+                              Image uploaded successfully
+                            </div>
+                          )}
+                        </div>
+                        {formData.image && (
+                          <img
+                            src={formData.image || "/placeholder.svg"}
+                            alt="Featured"
+                            className="mt-2 max-w-xs rounded-lg border border-slate-200/50 dark:border-slate-700/50"
+                          />
+                        )}
                       </motion.div>
 
                       <motion.div

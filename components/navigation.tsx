@@ -64,7 +64,7 @@ export function Navigation() {
                   Home
                 </motion.span>
               </Link>
-              <Link href="/fetchauthors">
+              <Link href="/about">
                 <motion.span
                   whileHover={{ y: -2 }}
                   className="text-slate-700 dark:text-slate-300 hover:text-blue-600 dark:hover:text-blue-400 transition-colors duration-300 font-medium"
@@ -80,15 +80,25 @@ export function Navigation() {
                   Contact
                 </motion.span>
               </Link>
-              {user && ( // Conditionally render "Create Article" link
-                <Link href="/create-article">
-                  <motion.span
-                    whileHover={{ y: -2 }}
-                    className="text-slate-700 dark:text-slate-300 hover:text-blue-600 dark:hover:text-blue-400 transition-colors duration-300 font-medium"
-                  >
-                    Create Article
-                  </motion.span>
-                </Link>
+              {user && (
+                <>
+                  <Link href="/create-article">
+                    <motion.span
+                      whileHover={{ y: -2 }}
+                      className="text-slate-700 dark:text-slate-300 hover:text-blue-600 dark:hover:text-blue-400 transition-colors duration-300 font-medium"
+                    >
+                      Create Article
+                    </motion.span>
+                  </Link>
+                  <Link href="/chatbot">
+                    <motion.span
+                      whileHover={{ y: -2 }}
+                      className="text-slate-700 dark:text-slate-300 hover:text-blue-600 dark:hover:text-blue-400 transition-colors duration-300 font-medium"
+                    >
+                      AI Chatbot
+                    </motion.span>
+                  </Link>
+                </>
               )}
             </div>
 
@@ -254,15 +264,28 @@ export function Navigation() {
                     Contact
                   </motion.div>
                 </Link>
-                {user && ( // Conditionally render "Create Article" link
-                  <Link href="/create-article" onClick={() => setIsOpen(false)}>
-                    <motion.div
-                      whileHover={{ x: 5 }}
-                      className="block px-4 py-2 text-slate-700 dark:text-slate-300 hover:text-blue-600 dark:hover:text-blue-400 transition-colors duration-300"
+                {user && (
+                  <>
+                    <Link
+                      href="/create-article"
+                      onClick={() => setIsOpen(false)}
                     >
-                      Create Article
-                    </motion.div>
-                  </Link>
+                      <motion.div
+                        whileHover={{ x: 5 }}
+                        className="block px-4 py-2 text-slate-700 dark:text-slate-300 hover:text-blue-600 dark:hover:text-blue-400 transition-colors duration-300"
+                      >
+                        Create Article
+                      </motion.div>
+                    </Link>
+                    <Link href="/chatbot" onClick={() => setIsOpen(false)}>
+                      <motion.div
+                        whileHover={{ x: 5 }}
+                        className="block px-4 py-2 text-slate-700 dark:text-slate-300 hover:text-blue-600 dark:hover:text-blue-400 transition-colors duration-300"
+                      >
+                        AI Chatbot
+                      </motion.div>
+                    </Link>
+                  </>
                 )}
                 {!loading &&
                   (user ? (
