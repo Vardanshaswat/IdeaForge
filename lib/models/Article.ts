@@ -9,11 +9,11 @@ export interface Article {
   tags: string[];
   image?: {
     publicId: {
-      type: String;
+      type: any;
       required: true;
     };
     url: {
-      type: String;
+      type: any;
       required: true;
     };
   };
@@ -22,10 +22,10 @@ export interface Article {
   authorEmail: string;
   published: boolean;
   readTime: string;
-  createdAt: Date;
-  updatedAt: Date;
-  views?: number;
-  likes?: number;
+  createdAt: any;
+  updatedAt: any;
+  views?: any;
+  likes?: any;
 }
 
 export interface CreateArticleData {
