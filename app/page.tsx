@@ -2,7 +2,16 @@
 
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import { Search, Calendar, Clock, ArrowRight, Sparkles } from "lucide-react";
+import {
+  Search,
+  Calendar,
+  Clock,
+  ArrowRight,
+  Sparkles,
+  User,
+  Eye,
+  Heart,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
@@ -24,10 +33,11 @@ interface Article {
   _id: string;
   title: string;
   excerpt: string;
+  content: string;
   category: string;
   readTime: string;
   createdAt: string;
-  image: string;
+  image: string | null | undefined;
   authorName: string;
   views: number;
   likes: number;
@@ -90,6 +100,28 @@ export default function HomePage() {
       month: "short",
       day: "numeric",
     });
+  };
+
+  const getOptimizedImageUrl = (
+    imageUrl: string | null | undefined,
+    width = 400,
+    height = 300
+  ) => {
+    // Check if imageUrl exists and is a string
+    if (!imageUrl || typeof imageUrl !== "string") {
+      return "/placeholder.svg?height=300&width=400";
+    }
+
+    // If it's a Cloudinary URL, optimize it
+    if (imageUrl.includes("cloudinary.com")) {
+      // Extract the part after '/upload/' and add transformations
+      const parts = imageUrl.split("/upload/");
+      if (parts.length === 2) {
+        return `${parts[0]}/upload/c_fill,w_${width},h_${height},q_auto,f_auto/${parts[1]}`;
+      }
+    }
+
+    return imageUrl;
   };
 
   return (
@@ -243,44 +275,62 @@ export default function HomePage() {
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
                 {articles.map((article, index) => (
                   <motion.div
-                    key={article.id}
+                    key={article.id || article._id}
                     initial={{ opacity: 0, y: 30 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: 1.4 + index * 0.1, duration: 0.6 }}
                     whileHover={{ y: -8 }}
                     className="group"
                   >
-                    <Link href={`/article/${article.id}`}>
+                    <Link href={`/article/${article.id || article._id}`}>
                       <Card className="overflow-hidden bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm border-slate-200/50 dark:border-slate-700/50 hover:shadow-xl hover:shadow-blue-500/10 transition-all duration-500 h-full">
                         <div className="relative overflow-hidden">
-                          <motion.img
+                          <motion.div
                             whileHover={{ scale: 1.1 }}
                             transition={{ duration: 0.6 }}
-                            src={
-                              article.image ||
-                              "/placeholder.svg?height=300&width=400"
-                            }
-                            alt={article.title}
-                            className="w-full h-48 object-cover"
-                          />
-                          <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-                          <Badge className="absolute top-4 left-4 bg-gradient-to-r from-blue-600 to-purple-600 text-white">
+                            className="relative h-48 bg-gradient-to-br from-blue-100 to-purple-100 dark:from-blue-900 dark:to-purple-900"
+                          >
+                            <img
+                              src={getOptimizedImageUrl(
+                                article.image,
+                                400,
+                                300
+                              )}
+                              alt={article.title}
+                              className="w-full h-full object-cover"
+                              onError={(e) => {
+                                const target = e.target as HTMLImageElement;
+                                target.src =
+                                  "/placeholder.svg?height=300&width=400";
+                              }}
+                              loading="lazy"
+                            />
+                            <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                          </motion.div>
+                          <Badge className="absolute top-4 left-4 bg-gradient-to-r from-blue-600 to-purple-600 text-white shadow-lg">
                             {article.category}
                           </Badge>
                         </div>
+
                         <CardContent className="p-6 flex flex-col flex-1">
                           <div className="space-y-3 flex-1">
                             <h3 className="text-xl font-bold text-slate-900 dark:text-white group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors duration-300 line-clamp-2">
                               {article.title}
                             </h3>
+
                             <p className="text-slate-600 dark:text-slate-300 text-sm leading-relaxed line-clamp-3">
                               {article.excerpt}
                             </p>
-                            <p className="text-xs text-slate-500 dark:text-slate-400">
-                              By {article.authorName}
-                            </p>
+
+                            {/* Author Info */}
+                            <div className="flex items-center gap-2 text-xs text-slate-500 dark:text-slate-400">
+                              <User className="w-3 h-3" />
+                              <span>By {article.authorName}</span>
+                            </div>
                           </div>
-                          <div className="flex items-center justify-between pt-4 mt-auto">
+
+                          {/* Article Stats */}
+                          <div className="flex items-center justify-between pt-4 mt-auto border-t border-slate-200/50 dark:border-slate-700/50">
                             <div className="flex items-center gap-4 text-xs text-slate-500 dark:text-slate-400">
                               <div className="flex items-center gap-1">
                                 <Calendar className="w-3 h-3" />
@@ -288,15 +338,31 @@ export default function HomePage() {
                               </div>
                               <div className="flex items-center gap-1">
                                 <Clock className="w-3 h-3" />
-                                {article.readTime}
+                                {article.readTime || "5 min read"}
                               </div>
                             </div>
-                            <motion.div
-                              whileHover={{ x: 3 }}
-                              className="text-blue-600 dark:text-blue-400"
-                            >
-                              <ArrowRight className="w-4 h-4" />
-                            </motion.div>
+
+                            {/* Views and Likes */}
+                            <div className="flex items-center gap-3 text-xs text-slate-500 dark:text-slate-400">
+                              {article.views && (
+                                <div className="flex items-center gap-1">
+                                  <Eye className="w-3 h-3" />
+                                  {article.views}
+                                </div>
+                              )}
+                              {article.likes && (
+                                <div className="flex items-center gap-1">
+                                  <Heart className="w-3 h-3" />
+                                  {article.likes}
+                                </div>
+                              )}
+                              <motion.div
+                                whileHover={{ x: 3 }}
+                                className="text-blue-600 dark:text-blue-400"
+                              >
+                                <ArrowRight className="w-4 h-4" />
+                              </motion.div>
+                            </div>
                           </div>
                         </CardContent>
                       </Card>

@@ -3,7 +3,10 @@
 import type React from "react";
 
 import { useEffect } from "react";
-import { CldUploadButton } from "next-cloudinary";
+import {
+  CldUploadButton,
+  CloudinaryUploadWidgetResults,
+} from "next-cloudinary";
 import { useState } from "react";
 import { motion } from "framer-motion";
 import { useRouter } from "next/navigation";
@@ -89,12 +92,26 @@ const CreateArticlePage = () => {
     }));
   };
 
-  const handleImageUpload = (result: any) => {
-    const imageUrl = `https://res.cloudinary.com/${process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME}/image/upload/${result?.info?.public_id}`;
-    setFormData((prev) => ({
-      ...prev,
-      image: imageUrl,
-    }));
+  const handleImageUpload = (result: CloudinaryUploadWidgetResults) => {
+    console.log("Cloudinary upload result:", result);
+
+    // Check if info exists and is not a string (it can be string or object)
+    if (result.info && typeof result.info !== "string") {
+      const imageUrl = result.info.secure_url;
+
+      console.log("Secure URL:", imageUrl);
+
+      if (imageUrl) {
+        setFormData((prev) => ({
+          ...prev,
+          image: imageUrl,
+        }));
+      } else {
+        console.error("No secure_url found in upload info");
+      }
+    } else {
+      console.error("Upload info is missing or not an object:", result.info);
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -344,7 +361,7 @@ const CreateArticlePage = () => {
                         <div className="flex items-center gap-4">
                           <CldUploadButton
                             uploadPreset="my_unsigned_preset"
-                            onUpload={handleImageUpload}
+                            onSuccess={handleImageUpload}
                             className="flex items-center gap-2 px-4 py-3 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-medium rounded-lg shadow-lg shadow-blue-500/25 hover:shadow-xl hover:shadow-blue-500/30 transition-all duration-300"
                           >
                             <Upload className="w-4 h-4" />
