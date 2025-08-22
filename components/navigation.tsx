@@ -2,22 +2,47 @@
 
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Moon, Sun, Menu, X, Sparkles, LogOut } from "lucide-react";
+import {
+  Moon,
+  Sun,
+  Menu,
+  X,
+  Sparkles,
+  LogOut,
+  User,
+  ChevronDown,
+} from "lucide-react";
 import { useTheme } from "next-themes";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
-import { useAuth } from "@/hooks/use-auth";
+import { useAuth } from "@/contexts/AuthContext";
 
 export function Navigation() {
   const [mounted, setMounted] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
+  const [showProfileDropdown, setShowProfileDropdown] = useState(false);
   const { theme, setTheme } = useTheme();
-  const { user, loading, logout } = useAuth(); // Add this line
-  const [isLoggingOut, setIsLoggingOut] = useState(false); // Add this line
+  const { user, loading, logout } = useAuth();
+  const [isLoggingOut, setIsLoggingOut] = useState(false);
 
   useEffect(() => {
     setMounted(true);
   }, []);
+
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = () => {
+      setShowProfileDropdown(false);
+    };
+
+    if (showProfileDropdown) {
+      document.addEventListener("click", handleClickOutside);
+    }
+
+    return () => {
+      document.removeEventListener("click", handleClickOutside);
+    };
+  }, [showProfileDropdown]);
 
   if (!mounted) {
     return null;
@@ -25,8 +50,16 @@ export function Navigation() {
 
   const handleLogout = async () => {
     setIsLoggingOut(true);
-    await logout();
-    setIsLoggingOut(false);
+    try {
+      await logout();
+    } finally {
+      setIsLoggingOut(false);
+    }
+  };
+
+  const toggleProfileDropdown = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    setShowProfileDropdown(!showProfileDropdown);
   };
 
   return (
@@ -90,12 +123,13 @@ export function Navigation() {
                       Create Article
                     </motion.span>
                   </Link>
-                  <Link href="/chatbot">
+
+                  <Link href="/test-puter">
                     <motion.span
                       whileHover={{ y: -2 }}
                       className="text-slate-700 dark:text-slate-300 hover:text-blue-600 dark:hover:text-blue-400 transition-colors duration-300 font-medium"
                     >
-                      AI Chatbot
+                      AI Assistant
                     </motion.span>
                   </Link>
                 </>
@@ -132,53 +166,159 @@ export function Navigation() {
                 </Button>
               </motion.div>
 
-              {!loading &&
-                (user ? (
+              {loading ? (
+                <div className="w-8 h-8 border-2 border-blue-600/30 border-t-blue-600 rounded-full animate-spin" />
+              ) : user ? (
+                <div className="relative">
+                  {/* Profile Button with dropdown */}
                   <motion.div
                     whileHover={{ scale: 1.05 }}
                     whileTap={{ scale: 0.95 }}
+                    onClick={toggleProfileDropdown}
+                    className="relative z-10"
                   >
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="flex items-center gap-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700/70 transition-all"
+                    >
+                      <div className="w-6 h-6 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center">
+                        <User className="h-3 w-3 text-white" />
+                      </div>
+                      <span className="font-medium">
+                        {user.name?.split(" ")[0]}
+                      </span>
+                      <ChevronDown
+                        className={`h-3.5 w-3.5 transition-transform ${
+                          showProfileDropdown ? "rotate-180" : ""
+                        }`}
+                      />
+                    </Button>
+                  </motion.div>
+
+                  {/* Dropdown menu */}
+                  <AnimatePresence>
+                    {showProfileDropdown && (
+                      <motion.div
+                        initial={{ opacity: 0, y: -10, height: 0 }}
+                        animate={{ opacity: 1, y: 0, height: "auto" }}
+                        exit={{ opacity: 0, y: -10, height: 0 }}
+                        transition={{ duration: 0.2 }}
+                        className="absolute right-0 mt-2 w-56 bg-white dark:bg-slate-800 rounded-lg shadow-lg border border-slate-200 dark:border-slate-700 overflow-hidden z-50"
+                        onClick={(e) => e.stopPropagation()}
+                      >
+                        <div className="p-3 border-b border-slate-200 dark:border-slate-700">
+                          <p className="text-sm font-medium text-slate-900 dark:text-white">
+                            Welcome, {user.name}
+                          </p>
+                          <p className="text-xs text-slate-500 dark:text-slate-400">
+                            {user.email}
+                          </p>
+                        </div>
+                        <div className="p-2">
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={handleLogout}
+                            disabled={isLoggingOut}
+                            className="w-full justify-start text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 hover:text-red-700 dark:hover:text-red-300"
+                          >
+                            {isLoggingOut ? (
+                              <div className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin mr-2" />
+                            ) : (
+                              <LogOut className="h-4 w-4 mr-2" />
+                            )}
+                            Logout
+                          </Button>
+                        </div>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                </div>
+              ) : (
+                <>
+                  <Link href="/login">
                     <Button
                       variant="ghost"
                       size="sm"
-                      onClick={handleLogout}
-                      disabled={isLoggingOut}
                       className="hover:bg-blue-100 dark:hover:bg-slate-800"
                     >
-                      {isLoggingOut ? (
-                        <div className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin" />
-                      ) : (
-                        <LogOut className="h-4 w-4 mr-2" />
-                      )}
-                      Logout
+                      Login
                     </Button>
-                  </motion.div>
-                ) : (
-                  <>
-                    <Link href="/login">
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        className="hover:bg-blue-100 dark:hover:bg-slate-800"
-                      >
-                        Login
-                      </Button>
-                    </Link>
-                    <Link href="/register">
-                      <Button
-                        size="sm"
-                        className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white"
-                      >
-                        Register
-                      </Button>
-                    </Link>
-                  </>
-                ))}
+                  </Link>
+                  <Link href="/register">
+                    <Button
+                      size="sm"
+                      className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white"
+                    >
+                      Register
+                    </Button>
+                  </Link>
+                </>
+              )}
             </div>
           </div>
 
           {/* Mobile Menu Button */}
           <div className="md:hidden flex items-center gap-2">
+            {user && (
+              <motion.div
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                onClick={toggleProfileDropdown}
+                className="relative z-10"
+              >
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="flex items-center p-1.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700"
+                >
+                  <div className="w-6 h-6 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center">
+                    <User className="h-3 w-3 text-white" />
+                  </div>
+                </Button>
+
+                {/* Mobile dropdown */}
+                <AnimatePresence>
+                  {showProfileDropdown && (
+                    <motion.div
+                      initial={{ opacity: 0, y: -10, height: 0 }}
+                      animate={{ opacity: 1, y: 0, height: "auto" }}
+                      exit={{ opacity: 0, y: -10, height: 0 }}
+                      transition={{ duration: 0.2 }}
+                      className="absolute right-0 mt-2 w-56 bg-white dark:bg-slate-800 rounded-lg shadow-lg border border-slate-200 dark:border-slate-700 overflow-hidden z-50"
+                      onClick={(e) => e.stopPropagation()}
+                    >
+                      <div className="p-3 border-b border-slate-200 dark:border-slate-700">
+                        <p className="text-sm font-medium text-slate-900 dark:text-white">
+                          Welcome, {user.name}
+                        </p>
+                        <p className="text-xs text-slate-500 dark:text-slate-400">
+                          {user.email}
+                        </p>
+                      </div>
+                      <div className="p-2">
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={handleLogout}
+                          disabled={isLoggingOut}
+                          className="w-full justify-start text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 hover:text-red-700 dark:hover:text-red-300"
+                        >
+                          {isLoggingOut ? (
+                            <div className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin mr-2" />
+                          ) : (
+                            <LogOut className="h-4 w-4 mr-2" />
+                          )}
+                          Logout
+                        </Button>
+                      </div>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </motion.div>
+            )}
+
             <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
               <Button
                 variant="ghost"
@@ -282,52 +422,68 @@ export function Navigation() {
                         whileHover={{ x: 5 }}
                         className="block px-4 py-2 text-slate-700 dark:text-slate-300 hover:text-blue-600 dark:hover:text-blue-400 transition-colors duration-300"
                       >
-                        AI Chatbot
+                        Groq Chat
+                      </motion.div>
+                    </Link>
+                    <Link href="/chatbot-aiml" onClick={() => setIsOpen(false)}>
+                      <motion.div
+                        whileHover={{ x: 5 }}
+                        className="block px-4 py-2 text-slate-700 dark:text-slate-300 hover:text-blue-600 dark:hover:text-blue-400 transition-colors duration-300"
+                      >
+                        AIML Chat
+                      </motion.div>
+                    </Link>
+                    <Link
+                      href="/chatbot-puter"
+                      onClick={() => setIsOpen(false)}
+                    >
+                      <motion.div
+                        whileHover={{ x: 5 }}
+                        className="block px-4 py-2 text-slate-700 dark:text-slate-300 hover:text-blue-600 dark:hover:text-blue-400 transition-colors duration-300"
+                      >
+                        Puter AI
+                      </motion.div>
+                    </Link>
+                    <Link href="/test-puter" onClick={() => setIsOpen(false)}>
+                      <motion.div
+                        whileHover={{ x: 5 }}
+                        className="block px-4 py-2 text-slate-700 dark:text-slate-300 hover:text-blue-600 dark:hover:text-blue-400 transition-colors duration-300"
+                      >
+                        AI Assistant
                       </motion.div>
                     </Link>
                   </>
                 )}
-                {!loading &&
-                  (user ? (
-                    <motion.div whileHover={{ x: 5 }}>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => {
-                          handleLogout();
-                          setIsOpen(false);
-                        }}
-                        disabled={isLoggingOut}
-                        className="w-full justify-start px-4 py-2 text-slate-700 dark:text-slate-300 hover:text-blue-600 dark:hover:text-blue-400 transition-colors duration-300"
-                      >
-                        {isLoggingOut ? (
-                          <div className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin mr-2" />
-                        ) : (
-                          <LogOut className="h-4 w-4 mr-2" />
-                        )}
-                        Logout
-                      </Button>
-                    </motion.div>
-                  ) : (
-                    <>
-                      <Link href="/login" onClick={() => setIsOpen(false)}>
-                        <motion.div
-                          whileHover={{ x: 5 }}
-                          className="block px-4 py-2 text-slate-700 dark:text-slate-300 hover:text-blue-600 dark:hover:text-blue-400 transition-colors duration-300"
-                        >
-                          Login
-                        </motion.div>
-                      </Link>
-                      <Link href="/register" onClick={() => setIsOpen(false)}>
-                        <motion.div
-                          whileHover={{ x: 5 }}
-                          className="block px-4 py-2 text-slate-700 dark:text-slate-300 hover:text-blue-600 dark:hover:text-blue-400 transition-colors duration-300"
-                        >
-                          Register
-                        </motion.div>
-                      </Link>
-                    </>
-                  ))}
+
+                {/* Mobile Auth Section */}
+                {!user && (
+                  <div className="border-t border-slate-200/50 dark:border-slate-800/50 pt-4">
+                    {loading ? (
+                      <div className="flex justify-center py-2">
+                        <div className="w-6 h-6 border-2 border-blue-600/30 border-t-blue-600 rounded-full animate-spin" />
+                      </div>
+                    ) : (
+                      <div className="space-y-2">
+                        <Link href="/login" onClick={() => setIsOpen(false)}>
+                          <motion.div
+                            whileHover={{ x: 5 }}
+                            className="block px-4 py-2 text-slate-700 dark:text-slate-300 hover:text-blue-600 dark:hover:text-blue-400 transition-colors duration-300"
+                          >
+                            Login
+                          </motion.div>
+                        </Link>
+                        <Link href="/register" onClick={() => setIsOpen(false)}>
+                          <motion.div
+                            whileHover={{ x: 5 }}
+                            className="block px-4 py-2 text-slate-700 dark:text-slate-300 hover:text-blue-600 dark:hover:text-blue-400 transition-colors duration-300"
+                          >
+                            Register
+                          </motion.div>
+                        </Link>
+                      </div>
+                    )}
+                  </div>
+                )}
               </div>
             </motion.div>
           )}

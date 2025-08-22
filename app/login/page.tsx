@@ -1,12 +1,10 @@
 "use client";
 
 import type React from "react";
-
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { setCookie } from "nookies";
 import {
   ArrowLeft,
   Mail,
@@ -18,9 +16,11 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import { useAuth } from "@/contexts/AuthContext";
 
 export default function LoginPage() {
   const router = useRouter();
+  const { user, login, loading } = useAuth();
   const [formData, setFormData] = useState({
     email: "",
     password: "",
@@ -29,20 +29,23 @@ export default function LoginPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
 
+  // Debug logging
+  useEffect(() => {
+    console.log("[LOGIN DEBUG] Auth state:", {
+      user: user?.name || "null",
+      loading,
+    });
+  }, [user, loading]);
+
   // Check if user is already logged in
   useEffect(() => {
-    const checkAuth = async () => {
-      try {
-        const response = await fetch("/api/auth/me");
-        if (response.ok) {
-          router.push("/"); // Redirect if already logged in
-        }
-      } catch (error) {
-        // User not logged in, stay on login page
-      }
-    };
-    checkAuth();
-  }, [router]);
+    if (!loading && user) {
+      console.log("[LOGIN DEBUG] User already logged in, redirecting...");
+      const redirectTo =
+        new URLSearchParams(window.location.search).get("redirect") || "/";
+      router.push(redirectTo);
+    }
+  }, [user, loading, router]);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -55,48 +58,40 @@ export default function LoginPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    console.log("[LOGIN DEBUG] Form submitted");
     setIsLoading(true);
     setError("");
 
     try {
-      const response = await fetch("/api/auth/login", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(formData),
-      });
+      const success = await login(formData.email, formData.password);
+      console.log("[LOGIN DEBUG] Login result:", success);
 
-      const data = await response.json();
-
-      if (data.success) {
-        // Store token in localStorage for client-side access
-        setCookie(null, "authToken", data.token, {
-          maxAge: 60 * 60 * 24 * 7, // 7 days
-          path: "/", // accessible across the site
-          secure: process.env.NODE_ENV === "production",
-          sameSite: "lax",
-        });
-
-        setCookie(null, "user", JSON.stringify(data.user), {
-          maxAge: 60 * 60 * 24 * 7,
-          path: "/",
-          secure: process.env.NODE_ENV === "production",
-          sameSite: "lax",
-        });
+      if (success) {
         // Redirect to home page or intended destination
         const redirectTo =
           new URLSearchParams(window.location.search).get("redirect") || "/";
+        console.log("[LOGIN DEBUG] Redirecting to:", redirectTo);
         router.push(redirectTo);
       } else {
-        setError(data.message || "Login failed");
+        setError("Login failed. Please check your credentials.");
       }
     } catch (error) {
+      console.error("[LOGIN DEBUG] Login error:", error);
       setError("Network error. Please try again.");
     } finally {
       setIsLoading(false);
     }
   };
+
+  // Show loading spinner while checking auth status
+  if (loading) {
+    console.log("[LOGIN DEBUG] Showing loading spinner");
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 dark:from-slate-950 dark:via-blue-950 dark:to-indigo-950 flex items-center justify-center">
+        <div className="w-8 h-8 border-2 border-blue-600/30 border-t-blue-600 rounded-full animate-spin" />
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 dark:from-slate-950 dark:via-blue-950 dark:to-indigo-950 flex items-center justify-center p-4">
