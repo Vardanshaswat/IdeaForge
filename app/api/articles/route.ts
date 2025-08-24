@@ -47,6 +47,8 @@ export async function POST(request: NextRequest) {
       likes: 0,
     };
 
+    {/* hereeeeeeeeeeee111 */}
+
     // Insert article into MongoDB
     const result = await collection.insertOne(article);
 

@@ -350,12 +350,14 @@ export default function HomePage() {
                                   {article.views}
                                 </div>
                               )}
-                              {article.likes && (
+                              {/* {article.likes && (
                                 <div className="flex items-center gap-1">
                                   <Heart className="w-3 h-3" />
                                   {article.likes}
                                 </div>
-                              )}
+                              )} */}
+
+                              {/* hereeeeeeeeeeee111 */}
                               <motion.div
                                 whileHover={{ x: 3 }}
                                 className="text-blue-600 dark:text-blue-400"

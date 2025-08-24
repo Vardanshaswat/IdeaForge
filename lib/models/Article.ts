@@ -26,6 +26,7 @@ export interface Article {
   updatedAt: any;
   views?: any;
   likes?: any;
+  likedBy?: string[];
 }
 
 export interface CreateArticleData {

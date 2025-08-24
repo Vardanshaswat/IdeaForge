@@ -417,23 +417,23 @@ export function Navigation() {
                         Create Article
                       </motion.div>
                     </Link>
-                    <Link href="/chatbot" onClick={() => setIsOpen(false)}>
+                    {/* <Link href="/chatbot" onClick={() => setIsOpen(false)}>
                       <motion.div
                         whileHover={{ x: 5 }}
                         className="block px-4 py-2 text-slate-700 dark:text-slate-300 hover:text-blue-600 dark:hover:text-blue-400 transition-colors duration-300"
                       >
                         Groq Chat
                       </motion.div>
-                    </Link>
-                    <Link href="/chatbot-aiml" onClick={() => setIsOpen(false)}>
+                    </Link> */}
+                    {/* <Link href="/chatbot-aiml" onClick={() => setIsOpen(false)}>
                       <motion.div
                         whileHover={{ x: 5 }}
                         className="block px-4 py-2 text-slate-700 dark:text-slate-300 hover:text-blue-600 dark:hover:text-blue-400 transition-colors duration-300"
                       >
                         AIML Chat
                       </motion.div>
-                    </Link>
-                    <Link
+                    </Link> */}
+                    {/* <Link
                       href="/chatbot-puter"
                       onClick={() => setIsOpen(false)}
                     >
@@ -443,7 +443,7 @@ export function Navigation() {
                       >
                         Puter AI
                       </motion.div>
-                    </Link>
+                    </Link> */}
                     <Link href="/test-puter" onClick={() => setIsOpen(false)}>
                       <motion.div
                         whileHover={{ x: 5 }}

@@ -36,6 +36,7 @@ import { toast } from "sonner";
 import { parseCookies } from "nookies";
 
 interface Article {
+  likedBy: any;
   _id: string;
   id: string;
   title: string;
@@ -104,6 +105,15 @@ export default function ArticleIdPage() {
       setEditContent(article.content);
     }
   }, [article]);
+
+  useEffect(() => {
+    if (article && user) {
+      setIsLiked(article.likedBy?.includes(user.id));
+      setEditTitle(article.title);
+      setEditExcerpt(article.excerpt);
+      setEditContent(article.content);
+    }
+  }, [article, user]);
 
   // Delete article
   const handleDeleteArticle = async () => {
@@ -181,6 +191,45 @@ export default function ArticleIdPage() {
       month: "long",
       day: "numeric",
     });
+  };
+
+  const [isLiking, setIsLiking] = useState(false);
+
+  const handleLike = async () => {
+    if (!article) return;
+    if (isLiking || isLiked) return;
+
+    setIsLiking(true);
+    try {
+      const cookies = parseCookies();
+      const token = cookies.authToken;
+      const response = await fetch(`/api/articles/${article.id}/like`, {
+        method: "POST", // Changed from POST to PUT
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          action: "like", // Tell the backend this is a like action, not an edit
+        }),
+      });
+      const data = await response.json();
+
+      if (data.success) {
+        setIsLiked(user ? data.likedBy.includes(user.id) : false);
+        setArticle((prev) => (prev ? { ...prev, likes: data.likes } : prev));
+      } else {
+        toast.error(data.message || "Failed to like article");
+      }
+
+      {
+        /* hereeeeeeeeeeee111 */
+      }
+    } catch (error) {
+      toast.error("Network error. Please try again.");
+    } finally {
+      setIsLiking(false);
+    }
   };
 
   const getOptimizedImageUrl = (
@@ -494,7 +543,8 @@ export default function ArticleIdPage() {
                         variant="outline"
                         size="sm"
                         className="w-full justify-start gap-2 bg-transparent"
-                        onClick={() => setIsLiked(!isLiked)}
+                        onClick={handleLike}
+                        disabled={isLiking}
                       >
                         <Heart
                           className={`w-4 h-4 ${
@@ -504,6 +554,8 @@ export default function ArticleIdPage() {
                         {isLiked ? "Liked" : "Like"} ({article.likes || 0})
                       </Button>
                     </motion.div>
+
+                    {/* hereeeeeeeeeeee111 */}
 
                     <motion.div
                       whileHover={{ scale: 1.02 }}

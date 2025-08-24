@@ -23,6 +23,7 @@ export default function AuthorsPage() {
   const [loading, setLoading] = useState(true);
   const [viewMode, setViewMode] = useState<"all" | "followed">("all");
   const { toast } = useToast();
+  const [isLiking, setIsLiking] = useState(false);
 
   const fetchAuthors = async () => {
     try {
@@ -56,6 +57,8 @@ export default function AuthorsPage() {
   }, [authors, viewMode, user]);
 
   const handleLike = async (authorId: string) => {
+    if (isLiking) return; // Ignore if request already in progress
+
     if (!user) {
       toast({
         title: "Authentication Required",
@@ -65,6 +68,7 @@ export default function AuthorsPage() {
       return;
     }
 
+    setIsLiking(true);
     try {
       const response = await fetch(`/api/authors/${authorId}/like`, {
         method: "POST",
@@ -87,6 +91,7 @@ export default function AuthorsPage() {
               : author
           )
         );
+        console.log("Updated authors state:", authors);
         toast({
           title: "Success",
           description: data.message,
@@ -106,6 +111,8 @@ export default function AuthorsPage() {
         description: "Failed to like/unlike author. Please try again.",
         variant: "destructive",
       });
+    } finally {
+      setIsLiking(false);
     }
   };
 
@@ -187,7 +194,7 @@ export default function AuthorsPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 dark:from-slate-950 dark:via-blue-950 dark:to-indigo-950 p-6">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 dark:from-slate-950 dark:via-blue-950 dark:to-indigo-950">
       <h1 className="text-3xl font-bold text-slate-900 dark:text-white mb-8 text-center">
         Registered Authors
       </h1>
@@ -226,6 +233,12 @@ export default function AuthorsPage() {
           {displayedAuthors.map((author) => {
             const isLikedByCurrentUser =
               user && author.likedBy?.includes(user.id);
+            console.log(
+              `Author ${author.name}, likedBy:`,
+              author.likedBy,
+              "User liked:",
+              isLikedByCurrentUser
+            );
             const isFollowedByCurrentUser =
               user && author.followers?.includes(user.id);
             const isCurrentUserAuthor = user && user.id === author._id;
@@ -261,7 +274,7 @@ export default function AuthorsPage() {
                         disabled={!user}
                         className={`flex items-center gap-1 ${
                           isLikedByCurrentUser
-                            ? "text-red-500 border-red-500"
+                            ? "text-black-500 border-black-500"
                             : "text-slate-600 dark:text-slate-300"
                         }`}
                       >
@@ -278,8 +291,7 @@ export default function AuthorsPage() {
                         }
                         size="sm"
                         onClick={() => handleFollow(author._id)}
-                        // Treat null as false so disabled false or true only
-                        disabled={!user || (isCurrentUserAuthor ?? false)}
+                        disabled={!user || !!isCurrentUserAuthor}
                         className={`flex items-center gap-1 ${
                           isFollowedByCurrentUser
                             ? "bg-blue-600 text-white hover:bg-blue-700"

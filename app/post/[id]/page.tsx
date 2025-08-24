@@ -203,7 +203,7 @@ export default function PostPage({ params }: { params: { id: string } }) {
                       whileHover={{ scale: 1.02 }}
                       whileTap={{ scale: 0.98 }}
                     >
-                      <Button
+                      {/* <Button
                         variant="outline"
                         size="sm"
                         className="w-full justify-start gap-2 bg-transparent"
@@ -215,8 +215,10 @@ export default function PostPage({ params }: { params: { id: string } }) {
                           }`}
                         />
                         {isLiked ? "Liked" : "Like"} ({post.stats.likes})
-                      </Button>
+                      </Button> */}
                     </motion.div>
+
+                    {/* hereeeeeeeeeeee111 */}
 
                     <motion.div
                       whileHover={{ scale: 1.02 }}
